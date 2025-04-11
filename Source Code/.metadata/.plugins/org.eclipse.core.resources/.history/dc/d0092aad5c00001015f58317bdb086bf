@@ -1,0 +1,192 @@
+package lms;
+
+import java.awt.Toolkit;
+import javax.swing.JOptionPane;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.InputMismatchException;
+
+public class LibraryManagementSystem {
+
+    public static void main(String[] args) {
+        String userName;
+        String password;
+        int chance = 0;
+        boolean logged = true;
+        Scanner input = new Scanner(System.in);
+        ArrayList<Password> pass = new ArrayList<>();
+        Patron user= new Patron();
+        PatronLinkedList list= new PatronLinkedList();
+        BookLinkedList bookList = new BookLinkedList();
+        BookBinarySearchTree bookBST = new BookBinarySearchTree();
+        
+        //Retrieve the passwords
+        try {
+            Scanner fileScanner = new Scanner(new File("PasswordCollection.txt"));
+            Password.loadPasswords(pass, fileScanner);
+        } catch (FileNotFoundException e) {
+            System.err.println("The Password File hasn't been created yet. There are no passwords to retrieve");
+        }
+		
+        //list.readPatronsFile(input);
+        //bookList.readBooksFromFile(bookBST, input);
+        
+        /*
+        // Admin Password Authentication
+        do {
+            System.out.printf("\n\nWelcome Admin!!!!\nEnter your username-> ");
+            userName = input.next();
+
+            System.out.printf("Enter your password-> ");
+            password = input.next();
+
+            if (userName.equals("admin") && password.equals("admin")) {
+                logged = true;
+                break;
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+                
+                // Show popup error message
+                JOptionPane.showMessageDialog(null, 
+                    "The Entered Username or Password is WRONG!\nYou have " + (2 - chance) + " more tries.", 
+                    "Login Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                
+                logged = false;
+            }
+            chance++;
+        } while (chance < 3);
+
+        // If not logged in, return to the previous menu
+        if (!logged){
+            input.close();
+            return; // Change to 'break' when the menu is implemented
+        }
+        */
+        
+        //Add a Patron
+        System.out.print("\nEnter the Patron's First Name-> ");
+        user.setFname(input.next());
+         
+        System.out.print("\nEnter the Patron's Last Name-> ");
+        user.setLname(input.next());
+        
+        list.addPatron(user, pass);  
+        
+        System.out.print("\nEnter the Patron's First Name-> ");
+        user.setFname(input.next());
+         
+        System.out.print("\nEnter the Patron's Last Name-> ");
+        user.setLname(input.next());
+        
+        list.addPatron(user, pass);  
+        
+          /*                
+        //User Password Authentication
+        if (user.patronLog(pass, input, list)){
+            Toolkit.getDefaultToolkit().beep();
+            System.out.println("\nYou have been successfully logged in");
+        } else {
+            System.err.println("\nLOGGING IN WAS UNSUCCESSFUL");        	
+        }*/
+             
+        //user.changePassword(pass, input);
+               
+        
+        //Add book
+        int addBookOpt = 0;
+        do {
+            System.out.print("\nEnter Book Title: ");
+            input.nextLine();  // Consume the leftover newline
+            String title = input.nextLine();  // Now properly reads the book title
+
+            System.out.print("\nEnter Author First Name: ");
+            String authorFName = input.next();
+            System.out.print("\nEnter Author Last Name: ");
+            String authorLName = input.next();
+
+            String ISBN = "";
+            
+            try {
+                System.out.print("\nEnter ISBN: ");
+                ISBN = input.next();
+                
+                String errorMessage = "";
+                
+                if (ISBN.length() != 17) {
+                    errorMessage += "ISBN must be exactly 17 characters long.\n";
+                }
+                
+                if (ISBN.charAt(0) == '-') {
+                    errorMessage += "ISBN must not start with a dash (-).\n";
+                }
+                
+                if (ISBN.charAt(ISBN.length() - 1) == '-') {
+                    errorMessage += "ISBN must not end with a dash (-). \n";
+                }
+                
+                if (countDigits(ISBN) != 13) {
+                    errorMessage += "ISBN must contain exactly 13 digits.\n";
+                }
+                
+                if (countDashes(ISBN) != 4) {
+                    errorMessage += "ISBN must contain exactly 4 dashes.\n";
+                }
+                
+                if (!errorMessage.isEmpty()) {
+                    throw new InputMismatchException(errorMessage.trim());
+                }
+            } catch (InputMismatchException e) {
+                Toolkit.getDefaultToolkit().beep();
+                JOptionPane.showMessageDialog(null, "Invalid ISBN:\n" + e.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            System.out.print("\nEnter Book Quantity: ");
+            int quantity = input.nextInt();
+            input.nextLine();  // FIX: Consume the leftover newline
+
+            Book newBook = new Book(title, authorFName, authorLName, ISBN, quantity);
+
+            bookList.insertAtBack(newBook);
+            bookBST.insertBookBSTNode(newBook);
+
+            System.out.print("\n1. Add new book\n2. Return to previous menu\nOption: ");
+            addBookOpt = input.nextInt();
+            input.nextLine();  
+        } while (addBookOpt == 1);
+
+        
+        //bookBST.seachByTitle(input);
+        bookBST.searchByISBN(input);
+                
+        //bookList.writeBooksToFile();
+        list.writePatronsToFile();
+        Password.storePasswords(pass);
+        input.close();
+        
+    }
+        
+	public static int countDigits(String input) {
+	    int digitCount = 0;
+	    for (int i = 0; i < input.length(); i++) {
+	        if (Character.isDigit(input.charAt(i))) {
+	            digitCount++;
+	        }
+	    }
+	    return digitCount;
+	}
+	
+	public static int countDashes(String input) {
+        int dashCount = 0;
+        for (int i = 0; i < input.length(); i++) {
+            if (input.charAt(i) == '-') {
+                dashCount++;
+            }
+        }
+        return dashCount;
+    }
+    
+    
+}

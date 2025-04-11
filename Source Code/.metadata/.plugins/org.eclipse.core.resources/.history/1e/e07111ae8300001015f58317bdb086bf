@@ -1,0 +1,240 @@
+package lms;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+
+public class PatronLinkedList {
+		private PatronNode head;
+		
+		//default constructor
+		public PatronLinkedList()
+		{
+			this.head = null;
+		}
+		
+		//primary
+		public PatronLinkedList (PatronNode h) //Creates a list with one patron in there
+		{
+			this.head = h;
+		}
+
+		//getters and setters
+		public PatronNode getHead() {
+			return head;
+		}
+
+		public void setHead(PatronNode head) {
+			this.head = head;
+		}
+		
+		//methods
+		
+		public void addPatron(Patron data, ArrayList<Password> pass)
+		{
+			PatronNode temp = new PatronNode (data); // Create a new node for the patron
+			
+			if(head == null) //if the list is empty
+			{
+				temp.getPatronData().setCardNum(1001);// Assign card number 1001 to the first patron
+				head = temp;
+			}
+			else //if the list was not empty
+			{
+				PatronNode curr = head;
+				while (curr.getNextNode() != null) // Traverse to the last node
+				{
+					curr = curr.getNextNode(); // Move to the next node
+				}
+				
+				// Now curr is the last node, get its card number and increment by 1
+				int newCardNum = ((curr.getPatronData().getCardNum()) + 1);
+				
+				// Set the card number for the new patron
+				temp.getPatronData().setCardNum(newCardNum);
+				
+				// Add the new patron node to the list
+				curr.setNextNode(temp);// Set the next of the last node to the new node	
+				
+			}	
+			
+			//generate and store the default password for the patron to use for log in
+			String passDefault= Password.generateDefaultPassword();
+			pass.add(new Password(Password.hashPassword(passDefault), Password.hashPassword(passDefault)));
+			
+			System.out.printf("\n%s your default password is %s\nREMEMBER IT!!", temp.getPatronData().getFname(), passDefault );
+		}
+		
+		public void removePatron(int cardNum)
+		{			
+			PatronNode curr = head;
+			if (head != null)//if list is not empty
+			{
+				
+				if (head.getPatronData().getCardNum() == cardNum)
+				{
+					head = head.getNextNode(); //if deleting head
+					return;
+				}				
+				
+				while(curr.getNextNode() != null ) //since we already past the head we simply need to go through the rest of the list
+				{
+					if(curr.getNextNode().getPatronData().getCardNum() == cardNum)
+					{
+						curr.setNextNode(curr.getNextNode().getNextNode());
+						return;
+					}
+					curr = curr.getNextNode();
+				}
+			}
+			else
+			{
+				System.out.println("List is empty!");
+			}
+		}
+		
+		/*public void removePatron(int cardNum) //alternative way to delete
+		{			
+			PatronNode curr = head;
+			PatronNode prev = head;
+			
+			while(curr != null)
+			{
+				if (curr.getPatronData().getCardNum() == cardNum)
+				{
+					if (curr==head)
+					{
+						head = head.getNextNode();
+					}
+					else
+					{
+						prev.setNextNode(curr.getNextNode());
+					}
+					curr = null;
+					break;
+				}
+				prev = curr;
+				curr = curr.getNextNode();
+			}			
+		} */		
+		
+		public void displayPatrons()
+		{
+			PatronNode curr = head;
+			
+			while (curr !=null )
+			{
+				System.out.print("[" + curr.toString()+ "]->\n");
+				curr = curr.getNextNode();
+			}
+			System.out.println("NULL");
+		}
+		
+		public boolean searchPatron(int cardNum)
+		{
+			PatronNode curr = head;
+			
+			while (curr != null)
+			{
+				if( curr.getPatronData().getCardNum() == cardNum)
+				{
+					return true;
+				}
+				curr = curr.getNextNode();
+			}
+			return false;
+		}	
+
+				//writing patrons to the patron file
+		public void writePatronsToFile()
+		{
+			FileWriter writer = null;			
+			
+			try
+			{
+				writer = new FileWriter(new File("PatronCollection.txt"),false);
+				
+				PatronNode curr = head;
+				
+				while(curr != null)
+				{
+					writer.write(curr.getPatronData().toString()+ "\n");
+					curr = curr.getNextNode();
+				}
+				System.out.print("Patron successfully saved to file.");
+				
+			}catch(IOException e)
+			{
+				System.err.print("Error writing to file: " + e.getMessage());
+			}finally {
+				try 
+				{
+					if(writer != null)
+					{
+						writer.close();
+					}
+				}catch(IOException e)
+				{
+					System.err.print("Error closing file: " + e.getMessage());
+				}
+			}
+		}
+
+	public void readPatronsFile(Scanner fileReader) 
+		{				
+			FileReader reader = null;
+			try 
+			{
+				while(fileReader.hasNextLine())
+				{
+					String line = fileReader.nextLine();// Read each line from the file
+					String[] parts = line.split("\t");
+					
+					if(parts.length >=3)
+					{
+						//extract patron details
+						String fname = parts[0];
+						String lname = parts[1];
+						int cardNum = Integer.parseInt(parts[2]); // Convert card number to integer
+						
+						//create Patron object
+						Patron newPatron = new Patron(fname, lname, cardNum);
+						
+						//check if the patron has a list of books (index will start at 3)
+						if (parts.length > 3)
+						{
+							 String[] checkedOutBooks = parts[3].split(",");  // Split books by comma
+							 StackLinkedList booklist = new StackLinkedList();
+							 
+							 //add list of books to the patron's checkOutbooks stack
+							 for(String isbn : checkedOutBooks)
+								 {
+								 	booklist.push(isbn.trim());	// Add each book to the stack (trim any spaces)							 
+								 }
+							 
+							 //set the patron's checked out books list
+							 newPatron.setCheckedOutBooks(booklist);
+						}
+						//add new patron to the linked list
+						addPatron(newPatron, null);		
+					}					
+				}
+				System.out.println("Patrons successfully loaded from file.");
+			}catch(InputMismatchException e)
+			{
+				System.err.print("Error reading from file: " + e.getMessage());
+			}
+			return;
+		}
+
+		
+		
+		
+		
+}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<section name="java.lang.Class">
+		<item key="replaceBarOpen" value="true"/>
+		<item key="selection" value=""/>
+		<item key="wrap" value="true"/>
+		<item key="casesensitive" value="false"/>
+		<item key="wholeword" value="false"/>
+		<item key="incremental" value="false"/>
+		<item key="isRegEx" value="false"/>
+		<list key="findhistory">
+			<item value="view pat"/>
+			<item value="searchup"/>
+			<item value="searchUpdate"/>
+			<item value="dequeu"/>
+			<item value="addp"/>
+			<item value="next"/>
+			<item value="user"/>
+			<item value="updat"/>
+			<item value="remove"/>
+			<item value="search"/>
+			<item value="for c"/>
+			<item value="check"/>
+			<item value="change"/>
+			<item value="dequ"/>
+			<item value="isEmpty"/>
+		</list>
+		<list key="replacehistory">
+			<item value="return;"/>
+			<item value="                                continue; //skips the remaining code in the current iteration and moves to the next iteration of the loop."/>
+			<item value="bookCurr.getBookDetail().getcheckedOutPatrons()"/>
+			<item value="res"/>
+			<item value="curr.getPatronData().checkedOutBooks"/>
+			<item value="returned"/>
+			<item value="origin"/>
+			<item value="oldPassword.contains(&quot;admin&quot;)"/>
+			<item value="pass.get(this.cardNum - 1001)"/>
+			<item value="this.cardNum - 1001"/>
+			<item value="(this.cardNum - 1001)"/>
+			<item value="isAdminPatron"/>
+			<item value="="/>
+		</list>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item key="DIALOG_X_ORIGIN" value="762"/>
+		<item key="DIALOG_Y_ORIGIN" value="217"/>
+		<item key="DIALOG_WIDTH" value="414"/>
+		<item key="DIALOG_HEIGHT" value="454"/>
+		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-15|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>
+	</section>
+</section>

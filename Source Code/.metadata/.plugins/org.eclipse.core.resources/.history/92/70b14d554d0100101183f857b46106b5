@@ -1,0 +1,464 @@
+package lms;
+
+import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
+import java.io.FileNotFoundException;
+import java.util.InputMismatchException;
+import java.awt.Toolkit;
+import javax.swing.JOptionPane;
+
+public class BookBinarySearchTree 
+{
+	private BookBSTNode root;
+	
+	public BookBinarySearchTree(){
+		root = null;
+	}
+	
+	public BookBSTNode getRoot() {
+		return root;
+	}
+
+	public void setRoot(BookBSTNode root) {
+		this.root = root;
+	}
+	
+	public void insertBookBSTNode(Book book){
+		BookBSTNode temp = new BookBSTNode(book);
+		
+		if(temp != null){
+			if(this.root == null){
+				this.root = temp;
+			}
+			else
+			{
+				BookBSTNode tempRoot = this.root;
+				while(true){
+					if(temp.getData().getISBN().compareTo(temp.getData().getISBN()) < 0){
+						if(tempRoot.getLeftSubTree() == null){
+							tempRoot.setLeftSubTree(temp);
+							break;
+						}
+						else{
+							tempRoot = tempRoot.getLeftSubTree();
+						}
+					}
+					else{
+						if(tempRoot.getRightSubTree() == null){
+							tempRoot.setRightSubTree(temp);
+							break;
+						}
+						else{
+							tempRoot = tempRoot.getRightSubTree();
+						}
+					}
+				}
+			}
+		}
+		else{
+			System.err.println("Tree is full. Cannot add another node!");
+		}
+	}
+	
+	public void seachByTitle(Scanner input)
+	{
+		System.out.print("Enter the title or the part of the title you remember of the book that you'd like to find: ");
+		String keyword = input.nextLine();
+		
+		List<Book> results = new ArrayList<>();
+		
+		//Recursive helper function
+		searchByTitleRecursive(root, keyword, results);
+	
+		if(isEmpty(results))
+		{
+			System.err.println("Sorry, but we couldnt find the title you searched for in our system.");
+			System.out.print("Press ENTER to continue");
+	        input.nextLine(); // Wait for user input before returning
+			return;
+		}
+		
+		// If only one book is found, print its details immediately
+	    if (results.size() == 1) 
+	    {
+	        System.out.println("\nBook Details:\n" + "Book Title: " + results.get(0).getTitle() + " | Author's Name: " + results.get(0).getAuthorFName() + " " + results.get(0).getAuthorLName() +  " | Book ISBN: " + results.get(0).getISBN() + " | Available?: " + results.get(0).getAvailable());
+	    	System.out.print("Press ENTER to continue");
+	        input.nextLine(); // Wait for user input before returning
+
+	        return;
+	    }
+		
+		//Display books found
+		System.out.println("\nThe books found based on your search are: ");
+		for (int i = 0; i < results.size(); i++) 
+		{
+            System.out.println((i + 1) + ". " + results.get(i).getTitle() + " by " + results.get(i).getAuthorFName() + " " + results.get(i).getAuthorLName());
+        }
+        
+        // Ask user to confirm book selection
+        System.out.print("\nEnter the number corresponding to the book you're looking for (or 0 to cancel): ");
+        int choice = input.nextInt();
+        input.nextLine(); // Consume newline
+        
+        if (choice > 0 && choice <= results.size()) 
+        {
+            Book selectedBook = results.get(choice - 1);
+            System.out.println("\nBook Details:\n" + "Book Title: " + selectedBook.getTitle() + " | Author's Name: " + selectedBook.getAuthorFName() + " " + selectedBook.getAuthorLName() +  " | Book ISBN: " + selectedBook.getISBN() + " | Available?: " + selectedBook.getAvailable());
+        	System.out.print("Press ENTER to continue");
+	        input.nextLine(); // Wait for user input before returning
+        } 
+        else 
+        {
+            System.err.println("Invalid selection or cancelled.");
+        	System.out.print("Press ENTER to continue");
+	        input.nextLine(); // Wait for user input before returning
+        }
+	}
+	
+	//Recursive Search Helper Method
+	public void searchByTitleRecursive(BookBSTNode node, String keyword, List<Book> results)
+	{
+		if(node == null) return;
+		
+		//If the book title contains the keyword, add it to the results
+		if (node.getData().getTitle().toLowerCase().contains(keyword.toLowerCase()))
+		{
+			results.add(node.getData());
+		}
+		
+		//Recursively search in the left subtree
+        searchByTitleRecursive(node.getLeftSubTree(), keyword, results);
+	
+		//Recursively search in the right subtree
+        searchByTitleRecursive(node.getRightSubTree(), keyword, results);
+	}
+	
+	private boolean isEmpty(List<Book> list) 
+	{
+	    for (Book book : list) 
+	    {
+	        return false; //If at least one book exists, it's not empty
+	    }
+    	return true;      //If no books found, it's empty
+	}
+	
+	public void searchByISBN(Scanner input) 
+	{
+	    String isbn = "";
+	    boolean validInput = false;
+
+	    while (!validInput) {
+	        try {
+	        	input.nextLine();
+	            System.out.print("Enter the ISBN of the book that you'd like to find: ");
+	            isbn = input.nextLine().trim(); //Trim to remove accidental spaces
+
+	            if (isbn.isEmpty()) { //Check for empty input
+	                Toolkit.getDefaultToolkit().beep();
+	                JOptionPane.showMessageDialog(null, "ISBN cannot be empty. Please enter a valid ISBN.", "Input Error", JOptionPane.ERROR_MESSAGE);
+	                continue;
+	            }
+
+	            String errorMessage = "";
+
+	            if (isbn.length() != 17) {
+	                errorMessage += "ISBN must be exactly 17 characters long.\n";
+	            }
+
+	            if (isbn.charAt(0) == '-') { 
+	                errorMessage += "ISBN must not start with a dash (-).\n";
+	            }
+
+	            if (isbn.charAt(isbn.length() - 1) == '-') {
+	                errorMessage += "ISBN must not end with a dash (-). \n";
+	            }
+
+	            if (LibraryManagementSystem.countDigits(isbn) != 13) {
+	                errorMessage += "ISBN must contain exactly 13 digits.\n";
+	            }
+
+	            if (LibraryManagementSystem.countDashes(isbn) != 4) {
+	                errorMessage += "ISBN must contain exactly 4 dashes.\n";
+	            }
+
+	            if (!errorMessage.isEmpty()) {
+	                throw new InputMismatchException(errorMessage.trim());
+	            }
+
+	            validInput = true; //If no errors, input is valid
+
+	        } catch (InputMismatchException e) {
+	            Toolkit.getDefaultToolkit().beep();
+	            JOptionPane.showMessageDialog(null, "Invalid ISBN:\n" + e.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    }
+
+	    // Proceed with book search
+	    List<Book> results = new ArrayList<>();
+	    searchByISBNRecursive(root, isbn, results);
+
+	    if (results.isEmpty()) {
+	        System.err.println("Sorry, but we couldn't find the ISBN you searched for in our system.");
+	        System.out.print("Press ENTER to continue");
+	        input.nextLine(); // Wait for user input before returning
+	        return;
+	    }
+
+	    if (results.size() == 1) 
+	    {
+	        System.out.println("\nBook Details:\n" +
+	                "Book Title: " + results.get(0).getTitle() +
+	                " | Author's Name: " + results.get(0).getAuthorFName() + " " + results.get(0).getAuthorLName() +
+	                " | Book ISBN: " + results.get(0).getISBN() +
+	                " | Available?: " + results.get(0).getAvailable());
+	        System.out.print("Press ENTER to continue");
+	    }
+	}
+	
+	//For Checkout
+	public Book searchISBN(Scanner input) 
+	{
+	    String isbn = "";
+	    boolean validInput = false;
+
+	    while (!validInput) {
+	        try {
+	            input.nextLine(); //Consume leftover newline
+	            System.out.print("Enter the ISBN of the book that you'd like to find: ");
+	            isbn = input.nextLine().trim(); // Trim to remove accidental spaces
+
+	            if (isbn.isEmpty()) { //Check for empty input
+	                Toolkit.getDefaultToolkit().beep();
+	                JOptionPane.showMessageDialog(null, "ISBN cannot be empty. Please enter a valid ISBN.", "Input Error", JOptionPane.ERROR_MESSAGE);
+	                continue;
+	            }
+
+	            String errorMessage = "";
+
+	            if (isbn.length() != 17) {
+	                errorMessage += "ISBN must be exactly 17 characters long.\n";
+	            }
+
+	            if (isbn.charAt(0) == '-') {
+	                errorMessage += "ISBN must not start with a dash (-).\n";
+	            }
+
+	            if (isbn.charAt(isbn.length() - 1) == '-') {
+	                errorMessage += "ISBN must not end with a dash (-).\n";
+	            }
+
+	            if (LibraryManagementSystem.countDigits(isbn) != 13) {
+	                errorMessage += "ISBN must contain exactly 13 digits.\n";
+	            }
+
+	            if (LibraryManagementSystem.countDashes(isbn) != 4) {
+	                errorMessage += "ISBN must contain exactly 4 dashes.\n";
+	            }
+
+	            if (!errorMessage.isEmpty()) {
+	                throw new InputMismatchException(errorMessage.trim());
+	            }
+
+	            validInput = true; //If no errors, input is valid
+
+	        } catch (InputMismatchException e) {
+	            Toolkit.getDefaultToolkit().beep();
+	            JOptionPane.showMessageDialog(null, "Invalid ISBN:\n" + e.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    }
+
+	    // Proceed with book search
+	    List<Book> results = new ArrayList<>();
+	    searchByISBNRecursive(root, isbn, results);
+
+	    if (results.isEmpty()) {
+	        System.err.println("Sorry, but we couldn't find the ISBN you searched for in our system.");
+	        System.out.print("Press ENTER to continue");
+	        input.nextLine(); // Wait for user input before returning
+	        return null; // Return null if no book is found
+	    } 
+	    else {
+	    	return results.get(0);
+	    }	    
+	}
+	
+	//Recursive Search Helper Method
+	public void searchByISBNRecursive(BookBSTNode node, String isbn, List<Book> results) 
+	{
+	    if (node == null) return;
+	
+	    // If the book ISBN matches, add it to the results
+	    if (node.getData().getISBN().equals(isbn)) {
+	        results.add(node.getData());
+	    }
+	
+	    // Recursively search in the left subtree
+	    searchByISBNRecursive(node.getLeftSubTree(), isbn, results);
+	
+	    // Recursively search in the right subtree
+	    searchByISBNRecursive(node.getRightSubTree(), isbn, results);
+	}
+	
+	//For Checkout
+	public void ISBNRecursiveEnqueue(BookBSTNode node, String isbn, int card) 
+	{
+	    if (node == null) return; // Base case: If node is null, return
+	   
+	    
+	    if (node.getData().getISBN().equals(isbn)) 
+	    {
+	        node.getData().getcheckedOutPatrons().enqueue(card);
+	        node.getData().setQuantity(node.getData().getQuantity()-1);
+	        return;
+	    }
+	    
+	    // If ISBN is smaller, search the left subtree
+	    if (isbn.compareTo(node.getData().getISBN()) < 0) 
+	    {
+	    	ISBNRecursiveEnqueue(node.getLeftSubTree(), isbn, card);
+	    } 
+	    else 
+	    {
+	    	ISBNRecursiveEnqueue(node.getRightSubTree(), isbn, card); // Search right subtree
+	    }
+	}
+	
+	//For Checkout
+	public Book searchPassedISBN(String isbn, Scanner input){
+	    List<Book> results = new ArrayList<>();
+	    searchByISBNRecursive(root, isbn, results);
+
+	    if (results.isEmpty()) {
+	        System.err.println("Sorry, but we couldn't find the ISBN you searched for in our system.");
+	        System.out.print("Press ENTER to continue");
+	        input.nextLine(); // Wait for user input before returning
+	        return null; // Return null if no book is found
+	    } 
+	    else {
+	    	return results.get(0);
+	    }	    
+	}
+    
+    public void searchByAuthor(Scanner input)
+	{
+	    System.out.print("Enter the author's first name, last name, or part of their name that you'd like to find: ");
+	    String keyword = input.nextLine();
+	    
+	    List<Book> results = new ArrayList<>();
+	    
+	    //Recursive helper function
+	    searchByAuthorRecursive(root, keyword, results);
+	
+	    if(isEmpty(results))
+	    {
+	        System.err.println("Sorry, but we couldn't find any books by the author you searched for.");
+	        System.out.print("Press ENTER to continue");
+	        return;
+	    }
+	    
+	    // If only one book is found, print its details immediately
+	    if (results.size() == 1) 
+	    {
+	        System.out.println("\nBook Details:\n" + "Book Title: " + results.get(0).getTitle() + " | Author's Name: " + results.get(0).getAuthorFName() + " " + results.get(0).getAuthorLName() +  " | Book ISBN: " + results.get(0).getISBN() + " | Available?: " + results.get(0).getAvailable());
+	        System.out.print("Press ENTER to continue");
+	        return;
+	    }
+	    
+	    // Display books found
+	    System.out.println("\nThe books found based on your search are: ");
+	    for (int i = 0; i < results.size(); i++) 
+	    {
+	        System.out.println((i + 1) + ". " + results.get(i).getTitle() + " by " + results.get(i).getAuthorFName() + " " + results.get(i).getAuthorLName());
+	    }
+	    
+	    // Ask user to confirm book selection
+	    System.out.print("\nEnter the number of the book you're looking for (or 0 to cancel): ");
+	    int choice = input.nextInt();
+	    input.nextLine(); // Consume newline
+	    
+	    if (choice > 0 && choice <= results.size()) 
+	    {
+	        Book selectedBook = results.get(choice - 1);
+	        System.out.println("\nBook Details:\n" + "Book Title: " + selectedBook.getTitle() + " | Author's Name: " + selectedBook.getAuthorFName() + " " + selectedBook.getAuthorLName() +  " | Book ISBN: " + selectedBook.getISBN() + " | Available?: " + selectedBook.getAvailable());
+	        System.out.print("Press ENTER to continue");
+	    } 
+	    else 
+	    {
+	        System.err.println("Invalid selection or cancelled.");
+	        System.out.print("Press ENTER to continue");
+	    }
+	}
+
+	// Recursive Search Helper Method
+	public void searchByAuthorRecursive(BookBSTNode node, String keyword, List<Book> results)
+	{
+	    if(node == null) return;
+	
+	    // Check if either the first or last name of the author contains the keyword
+	    if (node.getData().getAuthorFName().toLowerCase().contains(keyword.toLowerCase()) || 
+	        node.getData().getAuthorLName().toLowerCase().contains(keyword.toLowerCase()))
+	    {
+	        results.add(node.getData());
+	    }
+	    
+	    // Recursively search in the left subtree
+	    searchByAuthorRecursive(node.getLeftSubTree(), keyword, results);
+	
+	    // Recursively search in the right subtree
+	    searchByAuthorRecursive(node.getRightSubTree(), keyword, results);
+	}
+	
+	public int searchDequeue()
+	{
+		PatronQueue q; 
+		if (q.front == null)
+		{
+			System.out.println("No patrons have currently checked out this book");
+			 return -1; // Return an invalid card number to indicate failure
+		}
+		else
+		{
+			
+			int removedCardNum = front.getcardNum(); // Store the removed card number
+			front  = front.getNextNode();
+			
+			if (front == null) //if front was only patron and you remove it(by skipping over)
+			{
+				rear = null; //if list is empty, meaning it is null, then the rear automatically has to be null as well
+			}
+			else
+			{
+				front.setPrevNode(null);
+			}
+			return removedCardNum;
+		}
+	}
+	
+	public void AdminSearchByAuthor()
+	{
+		
+	}
+	
+	// Recursive Search Helper Method
+	public void AdminSearchByAuthorRecursive(BookBSTNode node, String keyword, List<Book> results, PatronLinkedList patron)
+	{
+	    if(node == null) return;
+	    
+	    
+	    
+	    
+	
+	    // Check if either the first or last name of the author contains the keyword
+	    if (node.getData().getcheckedOutPatrons().getFront().getcardNum()==(patron.getHead().getPatronData().getCardNum()))
+	    {
+	        results.add(node.getData());
+	    }
+	    
+	    // Recursively search in the left subtree
+	    searchByAuthorRecursive(node.getLeftSubTree(), keyword, results);
+	
+	    // Recursively search in the right subtree
+	    searchByAuthorRecursive(node.getRightSubTree(), keyword, results);
+	}
+}

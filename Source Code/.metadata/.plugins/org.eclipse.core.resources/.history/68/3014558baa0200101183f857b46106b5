@@ -1,0 +1,336 @@
+package lms;
+
+import java.awt.Toolkit;
+import javax.swing.JOptionPane;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.InputMismatchException;
+
+public class LibraryManagementSystem {
+
+    public static void main(String[] args) {
+        String userName= null;
+        int patronUserName;
+        String password;
+        int chance= 0;
+        boolean logged= true;
+        Scanner input= new Scanner(System.in);
+        ArrayList<Password> pass= new ArrayList<>();
+        Patron user= new Patron();
+        PatronLinkedList list= new PatronLinkedList();
+        BookLinkedList bookList= new BookLinkedList();
+        BookBinarySearchTree bookBST= new BookBinarySearchTree();
+        
+        // Load Passwords
+        try (Scanner fileScanner= new Scanner(new File("PasswordCollection.txt"))) {
+            Password.loadPasswords(pass, fileScanner);
+        } catch (FileNotFoundException e) {
+            System.err.println("The Password File hasn't been created yet. There are no passwords to retrieve");
+        }
+
+        // Load Books
+        try (Scanner fileScanner= new Scanner(new File("BookCollection.txt"))) {
+            bookList.readBooksFromFile(bookBST, fileScanner);
+        } catch (FileNotFoundException e) {
+            System.err.print("The Book File hasn't been created yet. There are no book records to retrieve");
+        }
+        
+        // Load Patrons
+        try (Scanner fileScanner= new Scanner(new File("PatronCollection.txt"))) {
+            list.readPatronsFile(fileScanner);
+        } catch (FileNotFoundException e) {
+            System.err.print("The Patrons' File hasn't been created yet. There are no patron records to retrieve");
+            
+        }
+        
+        list.displayPatrons();
+        
+        
+  /*           
+        // Admin Password Authentication
+        do {
+            System.out.printf("\n\nWelcome Admin!!!!\nEnter your username (or library card number)-> ");
+            
+            if (input.hasNextInt()) {
+                patronUserName= input.nextInt();
+                userName= null;
+            } else {
+                userName= input.next();
+                patronUserName= 1001;
+            }
+
+            System.out.printf("Enter your password-> ");
+            password= input.next();
+
+            //Check for admin login
+            boolean isAdmin= "admin".equals(userName) && "admin".equals(password) && patronUserName== 1001;
+
+            // Check for patron login with password hash verification
+            boolean isAdminPatron= password.contains("admin") &&
+                    pass.get(patronUserName - 1001).getHashPassword().equals(Password.hashPassword(password));
+            
+            if (isAdmin || isAdminPatron) {
+                logged= true;
+                break;
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+                int remainingTries= 2 - chance;
+                if (remainingTries > 0) {
+                    JOptionPane.showMessageDialog(null,
+                            "The Entered Username or Password is WRONG!\nYou have " + remainingTries + " more tries.",
+                            "Login Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+                logged= false;
+            }
+            chance++;
+        } while (chance < 3);
+
+        if (!logged) {
+            JOptionPane.showMessageDialog(null, "Login failed. Returning to the previous menu.", "Error", JOptionPane.WARNING_MESSAGE);
+            return;//break when menu created
+        }
+*/
+        
+        //makeAdmin(input, list, pass);
+        
+        //adminChangeAdminPassword(input, list, pass);
+        
+        //adminChangePassword(input, list, pass);
+                
+        
+        
+        //Add a Patron
+        /*System.out.print("\nEnter the Patron's First Name-> ");
+        user.setFname(input.next());
+         
+        System.out.print("\nEnter the Patron's Last Name-> ");
+        user.setLname(input.next());
+        
+        list.addPatron(user, pass); 
+        input.nextLine();*/
+        
+        
+        
+        //User Password Authentication
+        if (user.patronLog(pass, input, list)){
+            System.out.println("\nYou have been successfully logged in");
+        } else {
+            Toolkit.getDefaultToolkit().beep();
+            System.err.println("\nLOGGING IN WAS UNSUCCESSFUL");        	
+        }
+        
+        //user.changePassword(pass, input);
+        //user.checkout(input, list, bookBST, bookList);
+        
+        //input.nextLine();
+        //bookBST.adminSearchByAuthor(input, list);
+         /*      
+        
+        //Add book
+        int addBookOpt= 0;
+        do {
+            String title, authorFName, authorLName, ISBN;
+            int quantity;
+            
+            //Checks to make sure title, author first name and last name and quantity isn't empty.
+            
+            do{
+                System.out.print("\nEnter Book Title: ");
+            	title= input.nextLine();
+            	if(title.isEmpty()){
+                    System.err.println("Error: Book title cannot be empty!");
+                } 
+            }while(title.isEmpty());
+			
+			do{
+                System.out.print("\nEnter Author First Name: ");
+            	authorFName= input.next();
+            	if(authorFName.isEmpty()){
+                	System.err.println("Error: Author first name title cannot be empty!");  
+                }
+            }while(authouFName.isEmpty());
+            
+            do{
+                System.out.print("\nEnter Author Last Name: ");
+            	authorLName= input.next();
+            	if(authorLName.isEmpty()){
+                	System.err.println("Error: Author last name title cannot be empty!");  
+                }
+            }while(authouLName.isEmpty());
+
+            String ISBN= "";
+            
+            try {
+                System.out.print("\nEnter ISBN: ");
+                ISBN= input.next();
+                
+                String errorMessage= "";
+                
+                if (ISBN.length() != 17) {
+                    errorMessage += "ISBN must be exactly 17 characters long.\n";
+                }
+                
+                if (ISBN.charAt(0)== '-') {
+                    errorMessage += "ISBN must not start with a dash (-).\n";
+                }
+                
+                if (ISBN.charAt(ISBN.length() - 1)== '-') {
+                    errorMessage += "ISBN must not end with a dash (-). \n";
+                }
+                
+                if (countDigits(ISBN) != 13) {
+                    errorMessage += "ISBN must contain exactly 13 digits.\n";
+                }
+                
+                if (countDashes(ISBN) != 4) {
+                    errorMessage += "ISBN must contain exactly 4 dashes.\n";
+                }
+                
+                if (!errorMessage.isEmpty()) {
+                    throw new InputMismatchException(errorMessage.trim());
+                }
+            } catch (InputMismatchException e) {
+                Toolkit.getDefaultToolkit().beep();
+                JOptionPane.showMessageDialog(null, "Invalid ISBN:\n" + e.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            System.out.print("\nEnter Book Quantity: ");
+            int quantity= input.nextInt();
+            input.nextLine();  // FIX: Consume the leftover newline
+
+            Book newBook= new Book(title, authorFName, authorLName, ISBN, quantity);
+
+            bookList.insertAtBack(newBook);
+            bookBST.insertBookBSTNode(newBook);
+
+            System.out.print("\n1. Add new book\n2. Return to previous menu\nOption: ");
+            addBookOpt= input.nextInt();
+            input.nextLine();  
+        } while (addBookOpt== 1);
+*/
+        
+        //bookBST.seachByTitle(input);
+        //bookBST.searchByISBN(input);
+        //bookBST.searchByAuthor(input);
+                
+        bookList.writeBooksToFile();
+        list.writePatronsToFile();
+        Password.storePasswords(pass);
+        
+        input.close();
+    }
+        
+	public static int countDigits(String input) {
+	    int digitCount= 0;
+	    for (int i= 0; i < input.length(); i++) {
+	        if (Character.isDigit(input.charAt(i))) {
+	            digitCount++;
+	        }
+	    }
+	    return digitCount;
+	}
+	
+	public static int countDashes(String input) {
+        int dashCount= 0;
+        for (int i= 0; i < input.length(); i++) {
+            if (input.charAt(i)== '-') {
+                dashCount++;
+            }
+        }
+        return dashCount;
+    }
+    
+	public static void makeAdmin(Scanner in, PatronLinkedList pat, ArrayList<Password> pass){
+		int tempCard;
+		String tempPass;
+		
+		System.out.print("Enter the Library Card Number of the Patron you would like to become an ADMIN-> ");
+		tempCard= in.nextInt();
+		
+		if(pat.searchPatron(tempCard)) {
+			System.out.print("The Patron needs to enter their password to prove they consent to this action->	");
+			tempPass= in.next();
+			
+			if(Password.hashPassword(tempPass).equals(pass.get(tempCard - 1001).getHashPassword())){
+				tempPass= "admin"+ tempPass;
+				
+				pass.get(tempCard - 1001).setHashPassword(Password.hashPassword(tempPass));
+				
+				System.out.println("Your new password for all logins is now: " + tempPass);
+				System.out.println("REMEMBER IT!!\nIf you change your password be sure to include \"admin\" in the new password or you will no longer have admin privileges");
+			} else {
+	            Toolkit.getDefaultToolkit().beep();
+				JOptionPane.showMessageDialog(null,
+	                    "The Entered Password is Incorrect\nTry Again Later",
+	                    "Incorrect Password",
+	                    JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			
+		}
+		else {
+            Toolkit.getDefaultToolkit().beep();
+			JOptionPane.showMessageDialog(null,
+                    "The Entered Library Card Number doesn't exist in the system",
+                    "Non-Existent Record",
+                    JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+	}
+	
+	public static void adminChangePassword(Scanner in, PatronLinkedList pat, ArrayList<Password> pass) {
+		int tempCard;
+		String tempPass;
+		
+		System.out.print("Enter the Library Card Number of the Patron you are changing the password for-> ");
+		tempCard= in.nextInt();
+		
+		if(pat.searchPatron(tempCard)) {
+			tempPass= Password.generateDefaultPassword();
+							
+			pass.get(tempCard - 1001).setHashPassword(Password.hashPassword(tempPass));
+				
+			System.out.println("The Patron's new password is now: " + tempPass);
+			System.out.println("REMEMBER IT!!");	
+		}
+		else {
+            Toolkit.getDefaultToolkit().beep();
+			JOptionPane.showMessageDialog(null,
+                    "The Entered Library Card Number doesn't exist in the system",
+                    "Non-Existent Record",
+                    JOptionPane.ERROR_MESSAGE);
+			return;
+		}		
+	}
+	
+	public static void adminChangeAdminPassword(Scanner in, PatronLinkedList pat, ArrayList<Password> pass) {
+		int tempCard;
+		String tempPass;
+		
+		System.out.print("Enter the Library Card Number of the Patron Admin you are changing the password for-> ");
+		tempCard= in.nextInt();
+		
+		if(pat.searchPatron(tempCard)) {
+			tempPass= Password.generateDefaultPassword();
+							
+			tempPass= "admin"+ tempPass;
+
+			pass.get(tempCard - 1001).setHashPassword(Password.hashPassword(tempPass));
+			
+			System.out.println("The Patron Admin's password for all logins is now: " + tempPass);
+			System.out.println("REMEMBER IT!!\nIf you change your password be sure to include \"admin\" in the new password or you will no longer have admin privileges");	
+		}
+		else {
+            Toolkit.getDefaultToolkit().beep();
+			JOptionPane.showMessageDialog(null,
+                    "The Entered Library Card Number doesn't exist in the system",
+                    "Non-Existent Record",
+                    JOptionPane.ERROR_MESSAGE);
+			return;
+		}		
+	}
+    
+}

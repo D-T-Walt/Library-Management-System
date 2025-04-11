@@ -1,0 +1,326 @@
+package lms;
+
+import java.awt.Toolkit;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.InputMismatchException; 
+
+import javax.swing.JOptionPane;
+
+public class Patron {
+private String fname;
+    private String lname;
+    private int cardNum;
+    private StackLinkedList checkedOutBooks; //list of books from part 1
+    
+    public Patron() //default constructor
+    {
+        this.fname = " ";
+        this.lname = " ";
+        this.cardNum = 0;
+        this.checkedOutBooks = new StackLinkedList();
+    }
+    
+    //primary constructor
+    public Patron(String fname, String lname, int cardNum)
+    {
+        this.fname = fname;
+        this.lname = lname;
+        this.cardNum = cardNum;
+        this.checkedOutBooks = new StackLinkedList();
+    }
+    
+    public Patron(Patron p) //copy constructor
+    {
+        this.fname = p.fname;
+        this.lname = p.lname;
+        this.cardNum = p.cardNum;
+        this.checkedOutBooks = new StackLinkedList();
+    }
+    //geters and setters
+    public String getFname() {
+            return fname;
+        }
+
+    public void setFname(String fname) {
+        this.fname = fname;
+    }
+
+    public String getLname() {
+        return lname;
+    }
+
+    public void setLname(String lname) {
+        this.lname = lname;
+    }
+
+    public int getCardNum() {
+        return cardNum;
+    }
+
+    public void setCardNum(int cardNum) {
+        this.cardNum = cardNum;
+    }		
+    
+    public StackLinkedList getCheckedOutBooks() {
+        return checkedOutBooks;
+    }
+
+    public void setCheckedOutBooks(StackLinkedList checkedOutBooks) {
+        this.checkedOutBooks = checkedOutBooks;
+    }
+
+	
+	public boolean patronLog(ArrayList<Password> pass, Scanner in, PatronLinkedList list) {
+        int chance = 0;
+        int searchNum = 0;
+        String searchP;
+        boolean found = false;
+        
+        //Validate Library Card Number
+        do {
+            try {
+                System.out.printf("\n\nEnter your Library Card Number-> ");
+                searchNum = in.nextInt();
+                in.nextLine(); // Consume the newline character
+
+                // Search linked list for the patron by card number
+                PatronNode curr = list.getHead();
+                while (curr != null) {
+                    if (curr.getPatronData().getCardNum() == searchNum) {
+                        // Match found
+                        this.cardNum = curr.getPatronData().getCardNum();
+                        this.fname = curr.getPatronData().getFname();
+                        this.lname = curr.getPatronData().getLname();
+                        found = true;
+                        break;
+                    }
+                    curr = curr.getNextNode();
+                }
+
+                if (!found) {
+                    Toolkit.getDefaultToolkit().beep();
+                    JOptionPane.showMessageDialog(null,
+                        "The Entered Library Card Number doesn't exist!\nYou have " + (4 - chance) + " more tries.",
+                        "Login Error",
+                        JOptionPane.ERROR_MESSAGE);
+                    chance++;
+                }
+            } catch (InputMismatchException e) {
+                Toolkit.getDefaultToolkit().beep();
+                JOptionPane.showMessageDialog(null,
+                    "Invalid input. Please enter a valid Library Card Number.",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE);
+                in.nextLine(); // Clear the invalid input
+                chance++;
+            }
+        } while (chance < 5 && !found);
+
+        if (!found) {
+            System.err.println("\nReturning to the previous menu");
+            System.out.print("Press ENTER to continue");
+            return false;
+        }
+
+        // Password verification
+        chance = 0;
+        do {
+            System.out.printf("\nWelcome %s!!!\nEnter your Password-> ", this.fname);
+            searchP = in.next();
+
+            String hashedSearchP = Password.hashPassword(searchP);
+
+            if (hashedSearchP.equals(pass.get(searchNum - 1001).getHashPassword())) {
+                System.out.printf("Correct Password %s!!", this.fname);
+
+                //Check if the password is the default password and prompt a change
+                if (pass.get(searchNum - 1001).getDefaultP().equals(pass.get(searchNum - 1001).getHashPassword())) {
+                    Toolkit.getDefaultToolkit().beep();
+
+                    System.err.printf("\n\nYou still have your Default Password it needs to be changed\nEnter what you would like it to be changed to-> ");
+
+                    String newPassword;
+                    while (true) {
+                        newPassword = in.next();
+                        if (newPassword.length() >= 8) {
+                            break;
+                        } else {
+                            System.err.printf(
+                                "Your New Password must be at least 8 characters long.\nPlease enter a valid password-> ");
+                        }
+                    }
+
+                    // The new password entered is hashed, and set as the hashed password in the specific patron's password index
+                    pass.get(searchNum - 1001).setHashPassword(Password.hashPassword(newPassword));
+                    System.out.printf("\nYour New Password has been set %s!!", this.fname);
+                    System.out.print("Press ENTER to continue");
+                }
+
+                return true;
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+                JOptionPane.showMessageDialog(null,
+                    "The Entered Password is WRONG!\nYou have " + (4 - chance) + " more tries.",
+                    "Login Error",
+                    JOptionPane.ERROR_MESSAGE);
+                chance++;
+            }
+        } while (chance < 5);
+
+        return false;
+    }	
+	
+	//Allows patron to change password
+	public void changePassword(ArrayList<Password> pass, Scanner in) {
+	    String newPassword;
+
+	    System.out.printf("\n\nEnter your New Password (at least 8 characters): ");
+
+	    while (true) {
+	        try {
+	            newPassword = in.next();
+
+	            if (newPassword.length() >= 8 && !Password.hashPassword(newPassword).equals(pass.get(this.cardNum - 1001).getHashPassword())) {
+	                // The new password entered is hashed and set as the hashed password
+	                // in the specific patron's password index
+	                pass.get(this.cardNum - 1001).setHashPassword(Password.hashPassword(newPassword));
+	                System.out.printf("\nYour New Password has been set, %s!!\n", this.fname);
+	                System.out.print("Press ENTER to continue");
+	                break;
+	            } else {
+                    Toolkit.getDefaultToolkit().beep();
+	                System.err.print("Your New Password must be at least 8 characters long and cannot be a Previous Password.\nPlease enter a valid password: ");
+	            }
+	        } catch (InputMismatchException e) {
+	            System.err.print("Invalid input. Please enter a valid password: ");
+	            in.next(); // Clear the invalid input
+	        }
+	    }
+	}
+	
+	public void checkout(Scanner in, PatronLinkedList list, BookBinarySearchTree bst, BookLinkedList books){
+		
+		int opt, opt2;
+		Book temp= null;
+		StackLinkedList tempStack= new StackLinkedList();
+		PatronNode curr = list.getHead();
+		
+		do {
+	        System.out.println("\nCheckout Menu:");
+	        System.out.println("1. Add a book to your checkout list");
+	        System.out.println("2. Remove a book from your checkout list");
+	        System.out.println("3. View checkout list");
+	        System.out.println("4. Clear checkout list");
+	        System.out.println("5. Exit checkout system");
+	        System.out.print("Enter your option: ");
+
+	        while (!in.hasNextInt()) { // Prevent invalid input
+	            System.err.print("Invalid input! Please enter a number: ");
+	            in.next();
+	        }
+	        opt = in.nextInt();
+	        in.nextLine(); // Consume newline
+
+	        switch (opt) {
+	            case 1:
+	            	curr = list.getHead();
+	            	
+	                while (true) {
+	                	temp= bst.searchISBN(in);
+	            		
+	            		if(temp== null){
+	            			break;
+	            		}
+	            		else {
+	                        if(temp.getAvailable()){
+	                            System.out.printf("\nThe Book added to your Checkout List is %s by %s %s!!\n", temp.getTitle(), temp.getAuthorFName(), temp.getAuthorLName());    
+	                            
+	                            while (curr != null) {
+		                	        if (curr.getPatronData().getCardNum() == this.cardNum) {
+		                	            curr.getPatronData().checkedOutBooks.push(temp.getISBN());
+		                	            tempStack.push(temp.getISBN());
+		                	        	break;
+		                	        }
+		                	        curr = curr.getNextNode();
+		                	    }
+	                        }
+	                        else {
+	                            System.err.println("The book is not available for checkout");
+	                        }
+	            		}
+
+	                    System.out.print("\nPress ENTER to add another book or enter a number to return to previous menu: ");
+	                    if (in.hasNextInt()) { // If user enters a number, break
+	                        in.nextInt();
+	                        in.nextLine(); // Consume newline
+	                        break;
+	                    }
+	                    in.nextLine(); // Consume any remaining input
+	                }
+	                break;
+
+	            case 2:
+	            	curr = list.getHead();
+	            	
+	                if (checkoutList.isEmpty()) {
+	                    System.err.println("Your checkout list is empty. There is nothing to remove!!");
+	                    break;
+	                }
+
+	                while (true) {
+	                    String removedBook = checkoutList.pop();
+	                    if (removedBook == null) {
+	                        System.err.println("No more books to remove.");
+	                        break;
+	                    }
+	                    System.out.println("Removed book with ISBN: " + removedBook);
+
+	                    System.out.print("\nPress ENTER to remove another book or enter a number to return: ");
+	                    if (in.hasNextInt()) { // If user enters a number, break
+	                        in.nextInt();
+	                        in.nextLine(); // Consume newline
+	                        break;
+	                    }
+	                    in.nextLine(); // Consume any remaining input
+	                }
+	                break;
+
+	            case 3:
+	                System.out.println("\n📚 Your Checkout List:");
+	                if (checkoutList.isEmpty()) {
+	                    System.out.println("Your checkout list is empty.");
+	                } else {
+	                    checkoutList.display();
+	                }
+	                break;
+
+	            case 4:
+	                checkoutList.destroyStack();
+	                System.out.println("✅ Your checkout list has been cleared.");
+	                break;
+
+	            case 5:
+	                System.out.println("Exiting checkout system...");
+	                break;
+
+	            default:
+	                System.err.println("Invalid option! Please enter a number between 1 and 5.");
+	        }
+	    } while (opt != 5);
+		
+		
+		
+	}
+
+    @Override
+    public String toString() {
+        return fname + "\t"+ lname + "\t" + cardNum + "\t"+ checkedOutBooks.toString();
+    }	
+    
+    public String detailedToString() {
+        return "Patron Name:" + fname + lname + " | Library Card Number:" + cardNum + " | List of Checked out books: "+ checkedOutBooks.toString()+ "\n";
+    }	
+
+
+}

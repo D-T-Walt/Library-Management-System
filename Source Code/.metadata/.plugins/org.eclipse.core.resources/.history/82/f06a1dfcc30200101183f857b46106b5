@@ -1,0 +1,364 @@
+package lms;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileReader;
+
+public class BookLinkedList {
+	private BookNode head;
+	
+	//Default Constructor
+	public BookLinkedList() {
+		head = null;
+	}
+	
+	//Primary Constructor
+	public BookLinkedList(BookNode head) {
+		this.head = head;
+	}
+	
+	//Accessors
+	public BookNode getHead() {
+		return head;
+	}
+
+	//Mutator
+	public void setHead(BookNode head) {
+		this.head = head;
+	}
+	
+	public void insertAtBack(Book dataToInsert) {
+		BookNode temp1, temp2;
+		temp1 = new BookNode();
+		
+		if(temp1 != null) {
+			temp1.setBookDetail(dataToInsert);
+			temp1.setNextNode(null);
+			
+			if(this.head == null) {
+				this.head = temp1;
+			}
+			else {
+				temp2 = this.head;
+				while(temp2.getNextNode() != null) {
+					temp2 = temp2.getNextNode();
+				}
+				
+				temp2.setNextNode(temp1);
+			}
+		}
+		else {
+			System.err.println("Error! List is full (Out of Memory), can NOT add a new node");
+		}
+	}
+	
+	public void insertAtBack(String title, String authorFName, String authorLName, String ISBN, int Quantity, boolean available) {
+		BookNode temp1 = new BookNode(title, authorFName, authorLName, ISBN, Quantity, available);
+		if(temp1 != null) {
+			if(this.head == null) {
+				this.head = temp1;
+			}
+			else {
+				BookNode temp2 = this.head;
+				while(temp2.getNextNode() != null) {
+					temp2 = temp2.getNextNode();
+				}
+				
+				temp2.setNextNode(temp1);
+			}
+		}
+		else {
+			System.err.println("Error! List is full (Out of Memory), can NOT add a new node");
+		}
+	}
+	
+	public int countNodes() {
+		int count = 0;
+		BookNode curr = this.head;
+		
+		while(curr != null) {
+			count++;
+			curr = curr.getNextNode();
+		}
+		return count;
+	}
+	
+	public boolean search(String ISBN) {
+		boolean found = false;
+		BookNode curr = this.head;
+		
+		while(curr != null) {
+			if(curr.getBookDetail().getISBN().equals(ISBN)) {
+				found = true;
+				break;
+			}
+			curr = curr.getNextNode();
+		}
+		return found;
+	}
+	
+	public Book searchReturn(String ISBN) {
+		boolean found = false;
+		BookNode curr = this.head;
+		
+		while(curr != null) {
+			if(curr.getBookDetail().getISBN().equals(ISBN)) {
+				return curr.getBookDetail();
+			}
+			curr = curr.getNextNode();
+		}
+		
+		return null;
+	}
+	
+	public void display() {
+		BookNode curr = this.head;
+		while(curr != null) {
+			System.out.print("[" + curr.getBookDetail() + "]->");
+			curr = curr.getNextNode();
+		}
+		System.out.println("NULL");
+	}
+	
+	public boolean isEmpty() {
+		if(this.head == null) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isFull() {
+		BookNode temp = new BookNode();
+		
+		if(temp != null) {
+			temp = null;
+			return false;
+		}
+		return true;
+	}
+	
+	public Book delete(String ISBN) {
+		Book detailsToReturn = new Book();
+		
+		if(!isEmpty()) {
+			BookNode curr = this.head, prev = null;
+			
+			while(curr != null) {
+				if(curr.getBookDetail().getISBN().equals(ISBN)) {
+					if(curr == this.head) {
+						this.head = this.head.getNextNode();
+					}
+					else {
+						prev.setNextNode(curr.getNextNode());
+					}
+					detailsToReturn = curr.getBookDetail();
+					curr = null;
+					break;
+				}
+			}
+		}
+		else {
+			System.err.println("The list is empty; there is nothing to delete!");
+		}
+		
+		return detailsToReturn;
+	}
+	
+	//Writing to the bookCollection file
+	public void writeBooksToFile(){
+		FileWriter writer = null;
+		try{
+			writer = new FileWriter(new File("BookCollection.txt"), false);
+			
+			BookNode curr = this.head;
+			
+			while(curr != null){
+				writer.write(curr.getBookDetail().toString() + "\n");
+				curr = curr.getNextNode();
+			}
+			
+			System.out.println("\nBooks successfully saved to file.");
+		}catch(IOException e){
+			System.err.print("Error writing to file: " + e.getMessage());
+		}finally{
+			try{
+				if(writer != null){
+					writer.close();
+				}
+			}catch(IOException e){
+				System.err.print("Error closing file: " + e.getMessage());
+			}
+			
+		}
+		
+	}
+	
+	//Read from the bookCollection file
+	public void readBooksFromFile(BookBinarySearchTree bbst, Scanner fileReader){
+		try{
+			while(fileReader.hasNextLine()){
+				String line = fileReader.nextLine();
+				String[] part = line.split("\t");
+				
+				if(part.length >= 7){
+					String title = part[0];
+                    String authorFName = part[1];
+                    String authorLName = part[2];
+                    String ISBN = part[3];
+                    int quantity = Integer.parseInt(part[4]);
+                    boolean available = Boolean.parseBoolean(part[5]);
+                    
+                    String patronList = part[6];
+                    String[] patronNum = patronList.split(",");
+                    PatronQueue queue = new PatronQueue();
+                    PatronQueue queueCopy = new PatronQueue();
+                    
+                    Book book = new Book(title, authorFName, authorLName, ISBN, quantity, available);
+                    Book bookCopy = new Book(book.getTitle(), book.getAuthorFName(), book.getAuthorLName(), book.getISBN(), book.getQuantity(), book.getAvailable());
+                    
+                    for(String num : patronNum){
+						if(!num.isEmpty()){
+							int pNum = Integer.parseInt(num.trim());
+							if(pNum != -1){
+								queue.enqueue(pNum);
+								//queueCopy.enqueue(pNum);
+								
+								bookCopy.getcheckedOutPatrons().enqueue(pNum);
+							}
+						}
+					}
+					//Book book = new Book(title, authorFName, authorLName, ISBN, quantity, available, queue);
+					
+					book.setcheckedOutPatrons(queue); 
+					PatronQueue queueCopy1= new PatronQueue(queue);
+					bookCopy.setcheckedOutPatrons(queueCopy1); 
+					
+					insertAtBack(book);
+					bbst.insertBookBSTNode(bookCopy);
+                    
+                }
+			}
+			System.out.println("Books sucessfully loaded from file.");
+		}catch(InputMismatchException e){
+			System.err.print("Error reading from file: " + e.getMessage());
+		}
+		return;
+	}
+	
+	 // Admin search for books by author (now inside BookLinkedList)
+    public void adminSearchByAuthor(Scanner input, PatronLinkedList patronList) {
+        System.out.print("Enter the author's first name, last name, or part of their name that you'd like to find: ");
+        String keyword = input.nextLine();
+
+        List<Book> results = searchBooksByAuthor(keyword);
+
+        if (results.isEmpty()) {
+            System.err.println("Sorry, but we couldn't find any books by the author you searched for.");
+            System.out.print("Press ENTER to continue");
+            return;
+        }
+
+        if (results.size() == 1) {
+            Book selectedBook = results.get(0);
+            System.out.println("\nBook Details:\n" + "Book Title: " + selectedBook.getTitle() +
+                               " | Author's Name: " + selectedBook.getAuthorFName() + " " + selectedBook.getAuthorLName() +  
+                               " | Book ISBN: " + selectedBook.getISBN() + " | Available?: " + selectedBook.getAvailable());
+            System.out.print("Press ENTER to continue");
+
+            comparePatrons(selectedBook.getISBN(), patronList);
+            System.out.print("Press ENTER to continue");
+            return;
+        }
+
+        // Display books found
+        System.out.println("\nThe books found based on your search are: ");
+        for (int i = 0; i < results.size(); i++) {
+            System.out.println((i + 1) + ". " + results.get(i).getTitle() + " by " + results.get(i).getAuthorFName() + " " + results.get(i).getAuthorLName());
+        }
+
+        // Ask user to confirm book selection
+        System.out.print("\nEnter the number of the book you're looking for (or 0 to cancel): ");
+        int choice = input.nextInt();
+        input.nextLine(); // Consume newline
+
+        if (choice > 0 && choice <= results.size()) {
+            Book selectedBook = results.get(choice - 1);
+            System.out.println("\nBook Details:\n" + "Book Title: " + selectedBook.getTitle() + 
+                               " | Author's Name: " + selectedBook.getAuthorFName() + " " + selectedBook.getAuthorLName() +  
+                               " | Book ISBN: " + selectedBook.getISBN() + " | Available?: " + selectedBook.getAvailable());
+            System.out.print("Press ENTER to continue");
+
+            comparePatrons(selectedBook.getISBN(), patronList);
+            System.out.print("Press ENTER to continue");
+        } else {
+            System.err.println("Invalid selection or cancelled.");
+            System.out.print("Press ENTER to continue");
+        }
+    }
+    
+    // Search for a book node by ISBN
+    public BookNode searchBookNode(String isbn) {
+        BookNode curr = head;
+        while (curr != null) {
+            if (curr.getBookDetail().getISBN().equals(isbn)) {
+                return curr;
+            }
+            curr = curr.getNextNode();
+        }
+        return null;
+    }
+
+    // Compare patrons who checked out a book with the patron linked list
+    public void comparePatrons(String isbn, PatronLinkedList patronList) {
+        BookNode bookNode = searchBookNode(isbn);
+        
+        if (bookNode == null) {
+            System.out.println("Book not found in linked list.");
+            return;
+        }
+
+        PatronQueue bookQueue = bookNode.getBookDetail().getcheckedOutPatrons();
+
+        if (bookQueue == null || bookQueue.isEmpty()) {
+            System.out.println("\nNo patrons have checked out this book.");
+            return;
+        }
+
+        System.out.print("Queue in comparePatrons: ");
+        PatronQueueNode tempQueueNode = bookQueue.getFront();
+        while (tempQueueNode != null) {
+            System.out.print(tempQueueNode.getcardNum() + " ");
+            tempQueueNode = tempQueueNode.getNextNode();
+        }
+        System.out.println();
+
+        // Iterate through queue and compare with patron list
+        PatronQueueNode queueNode = bookQueue.getFront();
+        boolean found = false;
+
+        while (queueNode != null) {
+            PatronNode currPatron = patronList.getHead();
+            
+            while (currPatron != null) {
+                if (currPatron.getPatronData().getCardNum() == queueNode.getcardNum()) {
+                    System.out.println("MATCH FOUND: " + currPatron.getPatronData().getFname() + " " +
+                                       currPatron.getPatronData().getLname() +
+                                       " | Card Number: " + currPatron.getPatronData().getCardNum());
+                    found = true;
+                    break;
+                }
+                currPatron = currPatron.getNextNode();
+            }
+            queueNode = queueNode.getNextNode();
+        }
+
+        if (!found) {
+            System.out.println("No matching patrons found.");
+        }
+    }
+	
+	
+}

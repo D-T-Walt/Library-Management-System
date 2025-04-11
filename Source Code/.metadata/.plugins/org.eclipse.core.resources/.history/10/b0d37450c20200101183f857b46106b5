@@ -1,0 +1,252 @@
+package lms;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileReader;
+
+public class BookLinkedList {
+	private BookNode head;
+	
+	//Default Constructor
+	public BookLinkedList() {
+		head = null;
+	}
+	
+	//Primary Constructor
+	public BookLinkedList(BookNode head) {
+		this.head = head;
+	}
+	
+	//Accessors
+	public BookNode getHead() {
+		return head;
+	}
+
+	//Mutator
+	public void setHead(BookNode head) {
+		this.head = head;
+	}
+	
+	public void insertAtBack(Book dataToInsert) {
+		BookNode temp1, temp2;
+		temp1 = new BookNode();
+		
+		if(temp1 != null) {
+			temp1.setBookDetail(dataToInsert);
+			temp1.setNextNode(null);
+			
+			if(this.head == null) {
+				this.head = temp1;
+			}
+			else {
+				temp2 = this.head;
+				while(temp2.getNextNode() != null) {
+					temp2 = temp2.getNextNode();
+				}
+				
+				temp2.setNextNode(temp1);
+			}
+		}
+		else {
+			System.err.println("Error! List is full (Out of Memory), can NOT add a new node");
+		}
+	}
+	
+	public void insertAtBack(String title, String authorFName, String authorLName, String ISBN, int Quantity, boolean available) {
+		BookNode temp1 = new BookNode(title, authorFName, authorLName, ISBN, Quantity, available);
+		if(temp1 != null) {
+			if(this.head == null) {
+				this.head = temp1;
+			}
+			else {
+				BookNode temp2 = this.head;
+				while(temp2.getNextNode() != null) {
+					temp2 = temp2.getNextNode();
+				}
+				
+				temp2.setNextNode(temp1);
+			}
+		}
+		else {
+			System.err.println("Error! List is full (Out of Memory), can NOT add a new node");
+		}
+	}
+	
+	public int countNodes() {
+		int count = 0;
+		BookNode curr = this.head;
+		
+		while(curr != null) {
+			count++;
+			curr = curr.getNextNode();
+		}
+		return count;
+	}
+	
+	public boolean search(String ISBN) {
+		boolean found = false;
+		BookNode curr = this.head;
+		
+		while(curr != null) {
+			if(curr.getBookDetail().getISBN().equals(ISBN)) {
+				found = true;
+				break;
+			}
+			curr = curr.getNextNode();
+		}
+		return found;
+	}
+	
+	public Book searchReturn(String ISBN) {
+		boolean found = false;
+		BookNode curr = this.head;
+		
+		while(curr != null) {
+			if(curr.getBookDetail().getISBN().equals(ISBN)) {
+				return curr.getBookDetail();
+			}
+			curr = curr.getNextNode();
+		}
+		
+		return null;
+	}
+	
+	public void display() {
+		BookNode curr = this.head;
+		while(curr != null) {
+			System.out.print("[" + curr.getBookDetail() + "]->");
+			curr = curr.getNextNode();
+		}
+		System.out.println("NULL");
+	}
+	
+	public boolean isEmpty() {
+		if(this.head == null) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isFull() {
+		BookNode temp = new BookNode();
+		
+		if(temp != null) {
+			temp = null;
+			return false;
+		}
+		return true;
+	}
+	
+	public Book delete(String ISBN) {
+		Book detailsToReturn = new Book();
+		
+		if(!isEmpty()) {
+			BookNode curr = this.head, prev = null;
+			
+			while(curr != null) {
+				if(curr.getBookDetail().getISBN().equals(ISBN)) {
+					if(curr == this.head) {
+						this.head = this.head.getNextNode();
+					}
+					else {
+						prev.setNextNode(curr.getNextNode());
+					}
+					detailsToReturn = curr.getBookDetail();
+					curr = null;
+					break;
+				}
+			}
+		}
+		else {
+			System.err.println("The list is empty; there is nothing to delete!");
+		}
+		
+		return detailsToReturn;
+	}
+	
+	//Writing to the bookCollection file
+	public void writeBooksToFile(){
+		FileWriter writer = null;
+		try{
+			writer = new FileWriter(new File("BookCollection.txt"), false);
+			
+			BookNode curr = this.head;
+			
+			while(curr != null){
+				writer.write(curr.getBookDetail().toString() + "\n");
+				curr = curr.getNextNode();
+			}
+			
+			System.out.println("\nBooks successfully saved to file.");
+		}catch(IOException e){
+			System.err.print("Error writing to file: " + e.getMessage());
+		}finally{
+			try{
+				if(writer != null){
+					writer.close();
+				}
+			}catch(IOException e){
+				System.err.print("Error closing file: " + e.getMessage());
+			}
+			
+		}
+		
+	}
+	
+	//Read from the bookCollection file
+	public void readBooksFromFile(BookBinarySearchTree bbst, Scanner fileReader){
+		try{
+			while(fileReader.hasNextLine()){
+				String line = fileReader.nextLine();
+				String[] part = line.split("\t");
+				
+				if(part.length >= 7){
+					String title = part[0];
+                    String authorFName = part[1];
+                    String authorLName = part[2];
+                    String ISBN = part[3];
+                    int quantity = Integer.parseInt(part[4]);
+                    boolean available = Boolean.parseBoolean(part[5]);
+                    
+                    String patronList = part[6];
+                    String[] patronNum = patronList.split(",");
+                    PatronQueue queue = new PatronQueue();
+                    PatronQueue queueCopy = new PatronQueue();
+                    
+                    Book book = new Book(title, authorFName, authorLName, ISBN, quantity, available);
+                    Book bookCopy = new Book(book.getTitle(), book.getAuthorFName(), book.getAuthorLName(), book.getISBN(), book.getQuantity(), book.getAvailable());
+                    
+                    for(String num : patronNum){
+						if(!num.isEmpty()){
+							int pNum = Integer.parseInt(num.trim());
+							if(pNum != -1){
+								queue.enqueue(pNum);
+								queueCopy.enqueue(pNum);
+								
+								bookCopy.getcheckedOutPatrons.enqueue(pNum);
+							}
+						}
+					}
+					//Book book = new Book(title, authorFName, authorLName, ISBN, quantity, available, queue);
+					
+					book.setcheckedOutPatrons(queue);
+					
+					bookCopy.setcheckedOutPatrons(queueCopy); 
+					
+					insertAtBack(bookCopy);
+					bbst.insertBookBSTNode(book);
+                    
+                }
+			}
+			System.out.println("Books sucessfully loaded from file.");
+		}catch(InputMismatchException e){
+			System.err.print("Error reading from file: " + e.getMessage());
+		}
+		return;
+	}
+	
+	
+}

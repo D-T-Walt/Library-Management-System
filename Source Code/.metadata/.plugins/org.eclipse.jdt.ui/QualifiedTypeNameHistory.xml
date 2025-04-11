@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="java.lang.Integer"/>
+    <fullyQualifiedTypeName name="lms.Patron"/>
+    <fullyQualifiedTypeName name="java.io.FileNotFoundException"/>
+    <fullyQualifiedTypeName name="lms.BookBinarySearchTree"/>
+    <fullyQualifiedTypeName name="lms.BookLinkedList"/>
+    <fullyQualifiedTypeName name="lms.Password"/>
+    <fullyQualifiedTypeName name="lms.PatronQueue"/>
+    <fullyQualifiedTypeName name="java.lang.NumberFormatException"/>
+    <fullyQualifiedTypeName name="lms.BookNode"/>
+    <fullyQualifiedTypeName name="lms.BookBSTNode"/>
+    <fullyQualifiedTypeName name="lms.PatronLinkedList"/>
+    <fullyQualifiedTypeName name="lms.PatronNode"/>
+    <fullyQualifiedTypeName name="java.awt.Toolkit"/>
+    <fullyQualifiedTypeName name="java.io.IOException"/>
+    <fullyQualifiedTypeName name="java.lang.Exception"/>
+    <fullyQualifiedTypeName name="lms.StackLinkedList"/>
+    <fullyQualifiedTypeName name="lms.LibraryManagementSystem"/>
+</qualifiedTypeNameHistroy>
