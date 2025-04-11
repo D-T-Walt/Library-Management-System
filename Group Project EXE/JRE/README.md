@@ -11,6 +11,7 @@ A Java-based terminal application for managing a digital library system, designe
 - System Navigation
 - Error Handling
 - Exit Instructions
+- Launch Instructions
 - Credits
 
 ---
@@ -65,6 +66,15 @@ To return to a previous menu, select the designated “Previous Menu” option.
 ## ❌ Exit Instructions
 
 Users can safely log out or terminate the program from any main menu. On termination, all data is saved to local files.
+
+## 🖥️ Launch Instructions
+
+To run the Library Management System:
+
+- Execute the file: `LibraryManagementSystem.exe`
+- Important: This executable must be run from within the folder named `Group Project EXE` to ensure proper loading of all related files and data.
+
+You may create desktop or start menu shortcuts to the executable if desired, but the shortcut’s target must remain inside the `Group Project EXE` folder for the system to function correctly.
 
 ## 🧑‍🤝‍🧑 Credits
 
